@@ -3,6 +3,9 @@ from dotenv import load_dotenv
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
 from services.gemini_service import convert_to_json
+import json
+from services.csv_service import save_expense
+
 
 load_dotenv()
 TOKEN = os.getenv("BOT_TOKEN")
@@ -17,10 +20,14 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     print(f"User said: {user_text}")
 
     gemini_output = convert_to_json(user_text)
-    print("Gemini returned:")
-    print(gemini_output)
 
-    await update.message.reply_text("Processed.")
+    try:
+        expense_dict = json.loads(gemini_output)
+        save_expense(expense_dict)
+        await update.message.reply_text("Expense saved.")
+    except Exception as e:
+        print("Error parsing JSON:", e)
+        await update.message.reply_text("Failed to save expense.")
 
 
 
