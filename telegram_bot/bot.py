@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-#print("Hello world")
-print("hello world2")
-=======
 import os
 from dotenv import load_dotenv
 from telegram import Update
@@ -40,4 +36,3 @@ def main():
 
 if __name__ == "__main__":
     main()
->>>>>>> dd4983c (feat: Implement a basic Telegram bot with Gemini integration for parsing expenses and saving them to a CSV file.)
