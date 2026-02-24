@@ -1,48 +1,156 @@
-import os
-from dotenv import load_dotenv
-from google import genai
+import re
 
-load_dotenv()
+# -------------------------------
+# CATEGORY KEYWORD SYSTEM
+# -------------------------------
 
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY"),
-    http_options={"api_version": "v1"}
-)
+CATEGORY_KEYWORDS = {
+    "Food & Dining": [
+        "lunch", "dinner", "breakfast", "snacks", "tea", "coffee", "chai",
+        "restaurant", "cafe", "hotel", "burger", "pizza", "roll", "biryani",
+        "canteen", "mess", "kfc", "mcd", "dominos", "subway",
+        "swiggy", "zomato"
+    ],
 
-def convert_to_json(user_text: str):
-    print("Calling Gemini...")
+    "Groceries": [
+        "grocery", "milk", "bread", "vegetables", "fruits", "rice", "dal",
+        "eggs", "chicken", "fish", "meat", "atta", "oil",
+        "bigbasket", "zepto", "blinkit", "supermarket", "dmart"
+    ],
 
-    prompt = f"""
-You are an expense parser.
+    "Transport": [
+        "uber", "ola", "rapido", "auto", "metro", "bus", "train",
+        "petrol", "diesel", "fuel", "parking", "cab", "ride"
+    ],
 
-Convert the following sentence into STRICT JSON.
+    "Shopping": [
+        "shirt", "tshirt", "jeans", "shoes", "sneakers",
+        "zara", "nike", "adidas", "amazon", "flipkart",
+        "shopping", "order", "purchase"
+    ],
 
-Rules:
-- Output ONLY valid JSON.
-- Do NOT include markdown.
-- Do NOT include explanations.
-- Do NOT wrap in ```json.
-- category must be one of: Food, Entertainment, Fitness, Apparel, Transport, Utilities, Maintenance, Other.
-- description must clearly describe the expense.
-- amount must be a number (no currency symbols).
+    "Gadgets & Accessories": [
+        "iphone", "macbook", "laptop", "mouse", "keyboard",
+        "charger", "cable", "headphones", "earbuds",
+        "watch", "apple watch", "tablet", "electronics",
+        "croma", "vijay sales"
+    ],
 
-Return exactly this format:
+    "Entertainment": [
+        "movie", "bookmyshow", "netflix", "spotify",
+        "concert", "party", "club", "game", "ticket", "event"
+    ],
 
-{{
-  "category": "",
-  "description": "",
-  "amount": 0
-}}
+    "Health & Fitness": [
+        "doctor", "clinic", "hospital", "medicine", "pharmacy",
+        "gym", "protein", "supplement", "vitamin", "health"
+    ],
 
-Sentence: "{user_text}"
-"""
+    "Personal Care": [
+        "salon", "haircut", "spa", "skincare", "cream",
+        "cosmetics", "grooming", "razor", "shampoo"
+    ],
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-    )
+    "Subscriptions": [
+        "subscription", "renewal", "premium",
+        "cloud", "hosting", "membership"
+    ],
 
-    print("Gemini returned:")
-    print(response.text)
+    "Travel & Trips": [
+        "flight", "hotel", "resort", "trip", "travel",
+        "airbnb", "booking", "train ticket"
+    ],
 
-    return response.text
+    "Social / Gifts": [
+        "gift", "birthday", "treat", "friends",
+        "split", "donation", "wedding"
+    ]
+}
+
+
+# -------------------------------
+# CATEGORY DETECTION
+# -------------------------------
+
+def detect_category(description):
+    description = description.lower()
+
+    for category, keywords in CATEGORY_KEYWORDS.items():
+        for word in keywords:
+            if word in description:
+                return category
+
+    return "Miscellaneous"
+
+
+# -------------------------------
+# EXPENSE PARSER
+# -------------------------------
+
+def convert_to_json(user_text):
+    text = user_text.lower()
+
+    # Remove commas inside numbers (1,50,000 → 150000)
+    text = re.sub(r'(?<=\d),(?=\d)', '', text)
+
+    # Now split by comma safely
+    parts = text.split(",")
+
+    expenses = []
+
+    for part in parts:
+        part = part.strip()
+
+        amount_match = re.search(r"\d+", part)
+        if not amount_match:
+            continue
+
+        amount = int(amount_match.group())
+
+        description = part.replace(amount_match.group(), "").strip()
+
+        fillers = ["for", "to", "paid", "spent", "on", "rs", "rupees"]
+        for filler in fillers:
+            description = description.replace(filler, "")
+
+        description = description.strip()
+
+        if not description:
+            description = "Unknown"
+
+        expenses.append({
+            "amount": amount,
+            "description": description,
+            "category": detect_category(description)
+        })
+
+    return expenses
+
+    for part in parts:
+        part = part.strip()
+
+        amount_match = re.search(r"\d{1,3}(?:,\d{3})*|\d+", part)
+        if not amount_match:
+            continue
+
+        amount_str = amount_match.group().replace(",", "")
+        amount = int(amount_str)
+
+        description = part.replace(amount_match.group(), "").strip()
+
+        fillers = ["for", "to", "paid", "spent", "on", "rs", "rupees"]
+        for filler in fillers:
+            description = description.replace(filler, "")
+
+        description = description.strip()
+
+        if not description:
+            description = "Unknown"
+
+        expenses.append({
+            "amount": amount,
+            "description": description,
+            "category": detect_category(description)
+        })
+
+    return expenses

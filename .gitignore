@@ -1,3 +1,5 @@
 .env
 telegram_bot/.env
 .DS_Store
+expenses.csv
+telegram_bot/google_credentials.json
