@@ -2,6 +2,9 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import JournalPage from "./pages/JournalPage";
 import AnalysisPage from "./pages/AnalysisPage";
+import ReviewPage from "./pages/ReviewPage";
+import ProfilePage from "./pages/ProfilePage";
+
 
 function App() {
   return (
@@ -15,6 +18,9 @@ function App() {
 
         {/* Analysis (Summary only) */}
         <Route path="/analysis" element={<AnalysisPage />} />
+        <Route path="/review" element={<ReviewPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+
       </Routes>
     </Router>
   );

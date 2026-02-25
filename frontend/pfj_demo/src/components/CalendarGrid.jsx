@@ -1,9 +1,7 @@
 import { useState } from "react";
 import DayCell from "./DayCell";
-import "./CalendarGrid.css";
 
 function CalendarGrid({ month, year, expenses, setExpenses }) {
-
   const [selectedDay, setSelectedDay] = useState(null);
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("Food");
@@ -27,17 +25,23 @@ function CalendarGrid({ month, year, expenses, setExpenses }) {
     cells.push({ day: null, isActive: false });
   }
 
-  const handleAddExpense = () => {
+  // 🔹 Open modal
+  const handleAddExpense = (day) => {
+    setSelectedDay(day);
+  };
+
+  // 🔹 Submit from modal
+  const handleSubmitExpense = () => {
     if (!amount || !selectedDay) return;
 
     const entry = {
       amount: Number(amount),
-      category: category === "Other" ? custom || "Other" : category
+      category: category === "Other" ? custom || "Other" : category,
     };
 
     setExpenses((prev) => ({
       ...prev,
-      [selectedDay]: [...(prev[selectedDay] || []), entry]
+      [selectedDay]: [...(prev[selectedDay] || []), entry],
     }));
 
     setAmount("");
@@ -46,9 +50,34 @@ function CalendarGrid({ month, year, expenses, setExpenses }) {
     setSelectedDay(null);
   };
 
+  // 🔹 Delete entry
+  const handleDeleteExpense = (day, index) => {
+    setExpenses((prev) => {
+      const updatedDay = [...(prev[day] || [])];
+      updatedDay.splice(index, 1);
+
+      return {
+        ...prev,
+        [day]: updatedDay,
+      };
+    });
+  };
+
+  // 🔹 Edit entry
+  const handleEditExpense = (day, index, updatedEntry) => {
+    setExpenses((prev) => {
+      const updatedDay = [...(prev[day] || [])];
+      updatedDay[index] = updatedEntry;
+
+      return {
+        ...prev,
+        [day]: updatedDay,
+      };
+    });
+  };
+
   return (
     <div className="calendar-wrapper">
-
       <div className="calendar-header">
         {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
           <div key={d}>{d}</div>
@@ -62,7 +91,9 @@ function CalendarGrid({ month, year, expenses, setExpenses }) {
             day={cell.day}
             isActive={cell.isActive}
             entries={cell.day ? expenses[cell.day] || [] : []}
-            onAdd={setSelectedDay}
+            onAdd={handleAddExpense}
+            onDelete={handleDeleteExpense}
+            onEdit={handleEditExpense}
           />
         ))}
       </div>
@@ -102,7 +133,7 @@ function CalendarGrid({ month, year, expenses, setExpenses }) {
 
             <button
               className="btn-primary-clean"
-              onClick={handleAddExpense}
+              onClick={handleSubmitExpense}
             >
               Add
             </button>

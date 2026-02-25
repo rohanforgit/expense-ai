@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import MonthlySummary from "../components/MonthlySummary";
 import SpendSettings from "../components/SpendSettings";
+import SmartInsights from "../components/SmartInsights";
 
 function AnalysisPage() {
   const today = new Date();
@@ -25,8 +26,7 @@ function AnalysisPage() {
     dayEntries.forEach((entry) => {
       const cat = entry.category || "Other";
 
-      categoryTotals[cat] =
-        (categoryTotals[cat] || 0) + entry.amount;
+      categoryTotals[cat] = (categoryTotals[cat] || 0) + entry.amount;
 
       grandTotal += entry.amount;
     });
@@ -54,17 +54,15 @@ function AnalysisPage() {
     <div className="page-container">
       <h3>Expense Analysis (This Month)</h3>
 
-{/* Spending Threshold Settings */}
-<div className="card-section">
-  <SpendSettings />
-</div>
+      {/* Spending Threshold Settings */}
+      <div className="card-section">
+        <SpendSettings />
+      </div>
 
-{/* Monthly Summary */}
-<div className="card-section">
-  <MonthlySummary expenses={expenses} />
-</div>
-
-
+      {/* Monthly Summary */}
+      <div className="card-section">
+        <MonthlySummary expenses={expenses} />
+      </div>
 
       {/* Overspend Warning */}
       {overspendWarning && (
@@ -74,7 +72,7 @@ function AnalysisPage() {
             padding: "12px",
             backgroundColor: "#f8d7da",
             borderRadius: "6px",
-            color: "#721c24"
+            color: "#721c24",
           }}
         >
           ⚠️ {overspendWarning}
@@ -97,34 +95,32 @@ function AnalysisPage() {
               </tr>
             </thead>
             <tbody>
-              {Object.entries(categoryTotals).map(
-                ([category, total]) => {
-                  const percentage =
-                    grandTotal > 0
-                      ? ((total / grandTotal) * 100).toFixed(1)
-                      : 0;
+              {Object.entries(categoryTotals).map(([category, total]) => {
+                const percentage =
+                  grandTotal > 0 ? ((total / grandTotal) * 100).toFixed(1) : 0;
 
-                  const isTop = category === topCategory;
+                const isTop = category === topCategory;
 
-                  return (
-                    <tr
-                      key={category}
-                      style={
-                        isTop
-                          ? { backgroundColor: "#fff3cd" }
-                          : {}
-                      }
-                    >
-                      <td>
-                        {category}
-                        {isTop && " 🔥"}
-                      </td>
-                      <td>₹{total}</td>
-                      <td>{percentage}%</td>
-                    </tr>
-                  );
-                }
-              )}
+                return (
+                  <tr
+                    key={category}
+                    style={isTop ? { backgroundColor: "#fff3cd" } : {}}
+                  >
+                    <td>
+                      {category}
+                      {isTop && " 🔥"}
+                    </td>
+                    <td>₹{total}</td>
+                    <td>{percentage}%</td>
+                  </tr>
+                );
+              })}
+              {/* 🧠 Smart Insights */}
+              <SmartInsights
+                grandTotal={grandTotal}
+                categoryTotals={categoryTotals}
+                topCategory={topCategory}
+              />
             </tbody>
           </table>
         )}

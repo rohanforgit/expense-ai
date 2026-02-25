@@ -6,9 +6,12 @@ function Navbar() {
       <div className="pfj-brand">PFJ</div>
 
       <div className="pfj-links">
-        <Link to="/">Journal</Link>
-        <Link to="/analysis">Analysis</Link>
-      </div>
+  <Link to="/journal">Journal</Link>
+  <Link to="/analysis">Analysis</Link>
+  <Link to="/review">Review</Link>
+  <Link to="/profile">Profile</Link>
+</div>
+
     </div>
   );
 }
